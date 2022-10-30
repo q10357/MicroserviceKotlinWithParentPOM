@@ -1,0 +1,31 @@
+version: '3.1'
+services:
+  db:
+    container_name: 'postgres-db'
+    image: postgres:alpine
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_DB=customerdb
+      - POSTGRES_USER=devuser
+      - POSTGRES_PASSWORD=pirate
+  customer:
+    container_name: 'customer'
+    image: customerservice:1
+    ports:
+      - '8080:8080'
+    profiles: ['customer']
+    environment:
+      POSTGRES_JDBC_USER: devuser
+      POSTGRES_JDBC_PASS: pirate
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/customerdb"
+      SPRING_PROFILES_ACTIVE: local
+  core-service:
+    container_name: 'coreservice'
+    image: coreservice:1
+    ports:
+      - '8085:8085'
+    profiles: [ 'coreservice' ]
+    environment:
+      customer_baseurl: 'http://customer:8080/api/v1'
+      SPRING_PROFILES_ACTIVE: docker
